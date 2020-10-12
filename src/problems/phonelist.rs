@@ -45,6 +45,7 @@ fn get_digit(char: char) -> i8 {
     }
 }
 
+#[derive(Debug)]
 struct Number {
     a: i8,
     b: i8,
@@ -168,8 +169,76 @@ impl Number {
         }
     }
 
-    fn contains(self, other: Self) -> bool {
-        
+    fn contains(self, other: &Self) -> bool {
+        let is_last = (other.a >> 7) == -1;
+        if ((self.a << 1 & other.a << 1) == self.a) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.b >> 7) == -1;
+        if ((self.b << 1 & other.b << 1) == self.b) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.c >> 7) == -1;
+        if ((self.c << 1 & other.c << 1) == self.c) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.d >> 7) == -1;
+        if ((self.d << 1 & other.d << 1) == self.d) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.e >> 7) == -1;
+        if ((self.e << 1 & other.e << 1) == self.e) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.f >> 7) == -1;
+        if ((self.f << 1 & other.f << 1) == self.f) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.g >> 7) == -1;
+        if ((self.g << 1 & other.g << 1) == self.g) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.h >> 7) == -1;
+        if ((self.h << 1 & other.h << 1) == self.h) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.i >> 7) == -1;
+        if ((self.i << 1 & other.i << 1) == self.i) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
+
+        let is_last = (other.j >> 7) == -1;
+        if ((self.j << 1 & other.j << 1) == self.j) && is_last {
+            return true;
+        } else if is_last {
+            return false;
+        }
 
         false
     }
@@ -221,5 +290,33 @@ fn phonelist() {
 
         current_group += 1;
         lines_pointer += numbers_count + 1;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::problems::phonelist::Number;
+
+    #[test]
+    fn from_str() {
+        assert_eq!(
+            "Number { a: 0, b: -6, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0, i: 0, j: 0 }",
+            format!("{:?}", "06".parse::<Number>().unwrap())
+        );
+
+        assert_eq!(
+            "Number { a: 9, b: 6, c: 4, d: 5, e: 3, f: 2, g: 9, h: 8, i: 6, j: 7 }",
+            format!("{:?}", "9645329867".parse::<Number>().unwrap())
+        );
+    }
+
+    #[test]
+    fn contains() {
+        assert_eq!(
+            "06".parse::<Number>()
+                .unwrap()
+                .contains(&"06".parse::<Number>().unwrap()),
+            true
+        );
     }
 }
