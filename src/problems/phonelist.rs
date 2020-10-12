@@ -29,7 +29,7 @@ impl<T> UncheckedUnwrap<T> for Option<T> {
 }
 
 #[inline]
-fn get_digit(char: char) -> i8 {
+fn get_digit(char: char) -> u8 {
     match char {
         '0' => 0,
         '1' => 1,
@@ -47,16 +47,16 @@ fn get_digit(char: char) -> i8 {
 
 #[derive(Debug)]
 struct Number {
-    a: i8,
-    b: i8,
-    c: i8,
-    d: i8,
-    e: i8,
-    f: i8,
-    g: i8,
-    h: i8,
-    i: i8,
-    j: i8,
+    a: u8,
+    b: u8,
+    c: u8,
+    d: u8,
+    e: u8,
+    f: u8,
+    g: u8,
+    h: u8,
+    i: u8,
+    j: u8,
 }
 
 impl FromStr for Number {
@@ -71,7 +71,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.a *= -1;
+                number.a |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -80,7 +80,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.b *= -1;
+                number.b |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -89,7 +89,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.c *= -1;
+                number.c |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -98,7 +98,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.d *= -1;
+                number.d |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -107,7 +107,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.e *= -1;
+                number.e |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -116,7 +116,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.f *= -1;
+                number.f |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -125,7 +125,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.g *= -1;
+                number.g |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -134,7 +134,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.h *= -1;
+                number.h |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -143,7 +143,7 @@ impl FromStr for Number {
         let c = match chars.next() {
             Some(c) => c,
             None => {
-                number.i *= -1;
+                number.i |= 0b1000_0000;
                 return Ok(number);
             }
         };
@@ -170,90 +170,89 @@ impl Number {
     }
 
     fn contains(self, other: &Self) -> bool {
-        let is_last = (other.a >> 7) == -1;
-        if ((self.a << 1 & other.a << 1) == self.a) && is_last {
-            return true;
-        } else if is_last {
+        if self.a << 1 == other.a << 1 {
+            if other.a >> 7 == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.b >> 7) == -1;
-        if ((self.b << 1 & other.b << 1) == self.b) && is_last {
-            return true;
-        } else if is_last {
+        if self.b << 1 == other.b << 1 {
+            if other.b >> 7 == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.c >> 7) == -1;
-        if ((self.c << 1 & other.c << 1) == self.c) && is_last {
-            return true;
-        } else if is_last {
+        if self.c << 1 == other.c << 1 {
+            if other.c >> 7 == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.d >> 7) == -1;
-        if ((self.d << 1 & other.d << 1) == self.d) && is_last {
-            return true;
-        } else if is_last {
+        if self.d << 1 == other.d << 1 {
+            if other.d >> 7 == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.e >> 7) == -1;
-        if ((self.e << 1 & other.e << 1) == self.e) && is_last {
-            return true;
-        } else if is_last {
+        if self.e << 1 == other.e << 1 {
+            if (other.e >> 7) == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.f >> 7) == -1;
-        if ((self.f << 1 & other.f << 1) == self.f) && is_last {
-            return true;
-        } else if is_last {
+        if self.f << 1 == other.f << 1 {
+            if (other.f >> 7) == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.g >> 7) == -1;
-        if ((self.g << 1 & other.g << 1) == self.g) && is_last {
-            return true;
-        } else if is_last {
+        if self.g << 1 == other.g << 1 {
+            if (other.g >> 7) == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.h >> 7) == -1;
-        if ((self.h << 1 & other.h << 1) == self.h) && is_last {
-            return true;
-        } else if is_last {
+        if self.h << 1 == other.h << 1 {
+            if (other.h >> 7) == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.i >> 7) == -1;
-        if ((self.i << 1 & other.i << 1) == self.i) && is_last {
-            return true;
-        } else if is_last {
+        if self.i << 1 == other.i << 1 {
+            if (other.i >> 7) == 1 {
+                return true;
+            }
+        } else {
             return false;
         }
 
-        let is_last = (other.j >> 7) == -1;
-        if ((self.j << 1 & other.j << 1) == self.j) && is_last {
+        if self.j << 1 == other.j << 1 {
             return true;
-        } else if is_last {
-            return false;
         }
 
         false
     }
 }
 
-fn phonelist() {
-    let stdin = io::stdin();
+fn phonelist(lines: &Vec<String>) {
     let stdout = io::stdout();
     let mut writer_out = BufWriter::new(stdout);
-
-    let lines: Vec<String> = stdin
-        .lock()
-        .lines()
-        .map(|line| unsafe { line.unchecked_unwrap() })
-        .collect();
 
     let groups_count: u8 = unsafe { lines[0].parse().unchecked_unwrap() };
     let mut current_group: u8 = 1;
@@ -261,12 +260,12 @@ fn phonelist() {
 
     loop {
         let numbers_count: usize =
-            unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() } - 1;
+            unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() };
         let mut group_pointer_checker: usize = 0;
         let mut group_pointer_checked: usize = 1;
 
         loop {
-            if true {
+            if lines[group_pointer_checked].contains(&lines[group_pointer_checker]) {
                 unsafe { writeln!(writer_out, "NO").unchecked_unwrap() };
                 break;
             }
@@ -276,11 +275,15 @@ fn phonelist() {
                     unsafe { writeln!(writer_out, "YES").unchecked_unwrap() };
                     break;
                 } else {
-                    group_pointer_checker += 1;
-                    group_pointer_checked = group_pointer_checker + 1;
+                    group_pointer_checker += lines_pointer;
+                    group_pointer_checked = group_pointer_checked + 1;
                 }
             } else {
-                group_pointer_checked += 1;
+                group_pointer_checked += if group_pointer_checked == group_pointer_checker {
+                    2
+                } else {
+                    1
+                }
             }
         }
 
@@ -289,16 +292,29 @@ fn phonelist() {
         }
 
         current_group += 1;
-        lines_pointer += numbers_count + 1;
+        lines_pointer += numbers_count;
     }
+}
+
+// https://open.kattis.com/problems/phonelist
+fn main() {
+    let stdin = io::stdin();
+
+    let lines: Vec<String> = stdin
+        .lock()
+        .lines()
+        .map(|line| unsafe { line.unchecked_unwrap() })
+        .collect();
+
+    phonelist(&lines);
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::problems::phonelist::Number;
+    use crate::problems::phonelist::{phonelist, Number};
 
     #[test]
-    fn from_str() {
+    fn from_str_test() {
         assert_eq!(
             "Number { a: 0, b: -6, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0, i: 0, j: 0 }",
             format!("{:?}", "06".parse::<Number>().unwrap())
@@ -311,12 +327,46 @@ mod tests {
     }
 
     #[test]
-    fn contains() {
+    fn contains_test() {
         assert_eq!(
             "06".parse::<Number>()
                 .unwrap()
-                .contains(&"06".parse::<Number>().unwrap()),
+                .contains(&"06".parse().unwrap()),
             true
         );
+        assert_eq!(
+            "06100"
+                .parse::<Number>()
+                .unwrap()
+                .contains(&"061".parse().unwrap()),
+            true
+        );
+        assert_eq!(
+            "0123456789"
+                .parse::<Number>()
+                .unwrap()
+                .contains(&"0123456789".parse().unwrap()),
+            true
+        );
+    }
+
+    #[test]
+    fn phonelist_test() {
+        let lines: Vec<String> = "2
+3
+911
+97625999
+91125426
+5
+113
+12340
+123440
+12345
+98346"
+            .lines()
+            .map(|line| line.to_string())
+            .collect();
+
+        phonelist(&lines);
     }
 }
