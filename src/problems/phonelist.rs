@@ -28,127 +28,126 @@ impl<T> UncheckedUnwrap<T> for Option<T> {
     }
 }
 
-#[inline]
-fn get_digit(char: char) -> u8 {
+fn get_digit_left(char: char) -> u8 {
     match char {
-        '0' => 0,
-        '1' => 1,
-        '2' => 2,
-        '3' => 3,
-        '4' => 4,
-        '5' => 5,
-        '6' => 6,
-        '7' => 7,
-        '8' => 8,
-        '9' => 9,
+        '0' => 0b0000_0000,
+        '1' => 0b0001_0000,
+        '2' => 0b0010_0000,
+        '3' => 0b0011_0000,
+        '4' => 0b0100_0000,
+        '5' => 0b0101_0000,
+        '6' => 0b0110_0000,
+        '7' => 0b0111_0000,
+        '8' => 0b1000_0000,
+        '9' => 0b1001_0000,
+        _ => unsafe { unreachable_unchecked() },
+    }
+}
+
+fn get_digit_right(char: char) -> u8 {
+    match char {
+        '0' => 0b0000_0000,
+        '1' => 0b0000_0001,
+        '2' => 0b0000_0010,
+        '3' => 0b0000_0011,
+        '4' => 0b0000_0100,
+        '5' => 0b0000_0101,
+        '6' => 0b0000_0110,
+        '7' => 0b0000_0111,
+        '8' => 0b0000_1000,
+        '9' => 0b0000_1001,
         _ => unsafe { unreachable_unchecked() },
     }
 }
 
 #[derive(Debug)]
 struct Number {
-    a: u8,
-    b: u8,
-    c: u8,
-    d: u8,
-    e: u8,
-    f: u8,
-    g: u8,
-    h: u8,
-    i: u8,
-    j: u8,
+    length: u8,
+    data: [u8; 5],
+    _padding: u16,
 }
 
 impl FromStr for Number {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut number = Self::new();
         let mut chars = s.chars();
+        let mut number = Self::with_length(1);
 
-        number.a = get_digit(unsafe { chars.next().unchecked_unwrap() });
+        number.data[0] = get_digit_left(unsafe { chars.next().unchecked_unwrap() });
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[0] += match chars.next() {
+            Some(c) => get_digit_right(c),
             None => {
-                number.a |= 0b1000_0000;
                 return Ok(number);
             }
         };
-        number.b = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[1] = match chars.next() {
+            Some(c) => get_digit_left(c),
             None => {
-                number.b |= 0b1000_0000;
+                number.length = 2;
                 return Ok(number);
             }
         };
-        number.c = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[1] += match chars.next() {
+            Some(c) => get_digit_right(c),
             None => {
-                number.c |= 0b1000_0000;
+                number.length = 3;
                 return Ok(number);
             }
         };
-        number.d = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[2] = match chars.next() {
+            Some(c) => get_digit_left(c),
             None => {
-                number.d |= 0b1000_0000;
+                number.length = 4;
                 return Ok(number);
             }
         };
-        number.e = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[2] += match chars.next() {
+            Some(c) => get_digit_right(c),
             None => {
-                number.e |= 0b1000_0000;
+                number.length = 5;
                 return Ok(number);
             }
         };
-        number.f = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[3] = match chars.next() {
+            Some(c) => get_digit_left(c),
             None => {
-                number.f |= 0b1000_0000;
+                number.length = 6;
                 return Ok(number);
             }
         };
-        number.g = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[3] += match chars.next() {
+            Some(c) => get_digit_right(c),
             None => {
-                number.g |= 0b1000_0000;
+                number.length = 7;
                 return Ok(number);
             }
         };
-        number.h = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[4] = match chars.next() {
+            Some(c) => get_digit_left(c),
             None => {
-                number.h |= 0b1000_0000;
+                number.length = 8;
                 return Ok(number);
             }
         };
-        number.i = get_digit(c);
 
-        let c = match chars.next() {
-            Some(c) => c,
+        number.data[4] += match chars.next() {
+            Some(c) => get_digit_right(c),
             None => {
-                number.i |= 0b1000_0000;
+                number.length = 9;
                 return Ok(number);
             }
         };
-        number.j = get_digit(c);
 
+        number.length = 10;
         Ok(number)
     }
 }
@@ -156,95 +155,22 @@ impl FromStr for Number {
 impl Number {
     fn new() -> Number {
         Number {
-            a: 0,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-            f: 0,
-            g: 0,
-            h: 0,
-            i: 0,
-            j: 0,
+            length: 0,
+            data: [0, 0, 0, 0, 0],
+            _padding: 0,
+        }
+    }
+
+    fn with_length(length: u8) -> Number {
+        Number {
+            length,
+            data: [0, 0, 0, 0, 0],
+            _padding: 0,
         }
     }
 
     fn contains(self, other: &Self) -> bool {
-        if self.a << 1 == other.a << 1 {
-            if other.a >> 7 == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
 
-        if self.b << 1 == other.b << 1 {
-            if other.b >> 7 == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.c << 1 == other.c << 1 {
-            if other.c >> 7 == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.d << 1 == other.d << 1 {
-            if other.d >> 7 == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.e << 1 == other.e << 1 {
-            if (other.e >> 7) == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.f << 1 == other.f << 1 {
-            if (other.f >> 7) == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.g << 1 == other.g << 1 {
-            if (other.g >> 7) == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.h << 1 == other.h << 1 {
-            if (other.h >> 7) == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.i << 1 == other.i << 1 {
-            if (other.i >> 7) == 1 {
-                return true;
-            }
-        } else {
-            return false;
-        }
-
-        if self.j << 1 == other.j << 1 {
-            return true;
-        }
 
         false
     }
@@ -316,12 +242,17 @@ mod tests {
     #[test]
     fn from_str_test() {
         assert_eq!(
-            "Number { a: 0, b: -6, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0, i: 0, j: 0 }",
+            "Number { length: 2, ab: 6, cd: 0, ef: 0, gh: 0, ij: 0, _padding: 0 }",
             format!("{:?}", "06".parse::<Number>().unwrap())
         );
 
         assert_eq!(
-            "Number { a: 9, b: 6, c: 4, d: 5, e: 3, f: 2, g: 9, h: 8, i: 6, j: 7 }",
+            "Number { length: 3, ab: 6, cd: 96, ef: 0, gh: 0, ij: 0, _padding: 0 }",
+            format!("{:?}", "066".parse::<Number>().unwrap())
+        );
+
+        assert_eq!(
+            "Number { length: 10, ab: 150, cd: 69, ef: 50, gh: 152, ij: 103, _padding: 0 }",
             format!("{:?}", "9645329867".parse::<Number>().unwrap())
         );
     }
