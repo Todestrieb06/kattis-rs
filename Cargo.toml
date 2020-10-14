@@ -5,3 +5,4 @@ authors = ["Haratyk Florent <haratykflorent@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+superluminal-perf = "0.1.1"

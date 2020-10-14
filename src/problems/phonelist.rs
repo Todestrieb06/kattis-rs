@@ -207,6 +207,7 @@ impl Number {
     }
 }
 
+#[inline]
 fn phonelist(lines: &Vec<String>) {
     let stdout = io::stdout();
     let mut writer_out = BufWriter::new(stdout);
@@ -261,13 +262,15 @@ fn phonelist(lines: &Vec<String>) {
 
 // https://open.kattis.com/problems/phonelist
 fn main() {
-    let stdin = io::stdin();
+    let lines: Vec<String> = {
+        let stdin = io::stdin();
 
-    let lines: Vec<String> = stdin
-        .lock()
-        .lines()
-        .map(|line| unsafe { line.unchecked_unwrap() })
-        .collect();
+        stdin
+            .lock()
+            .lines()
+            .map(|line| unsafe { line.unchecked_unwrap() })
+            .collect()
+    };
 
     phonelist(&lines);
 }
