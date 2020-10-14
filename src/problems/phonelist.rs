@@ -186,11 +186,10 @@ impl Number {
     }
 
     fn containing(&self, other: &Self) -> bool {
-        let mut length = self.length;
+        let mut length = other.length;
         let mut mask = 0b1111_1111;
 
-        // TODO: Doit inclure le fait que la longueur pair est égal entre les deux nombres
-        if self.length % 2 == 1 {
+        if other.length % 2 == 1 {
             length -= 1;
             mask = 0b1111_0000;
         }
@@ -212,37 +211,28 @@ fn phonelist(lines: &Vec<String>) {
     let stdout = io::stdout();
     let mut writer_out = BufWriter::new(stdout);
 
-    let groups_count: u8 = unsafe { lines[0].parse().unchecked_unwrap() }; // 1 - Ok
-    let mut current_group: u8 = 1; // Ok
-    let mut lines_pointer: usize = 1; // Ok
+    let groups_count: u8 = unsafe { lines[0].parse().unchecked_unwrap() };
+    let mut current_group: u8 = 1;
+    let mut lines_pointer: usize = 1;
 
     loop {
         let group_target =
-            unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer }; // 6 - Ok
+            unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer };
 
-        let mut group_pointer_checked = lines_pointer + 1; // 2 - Ok
-        let mut group_pointer_checker = lines_pointer + 2; // 3 - Ok
+        let mut group_pointer_checked = lines_pointer + 1;
+        let mut group_pointer_checker = lines_pointer + 2;
 
         loop {
-            unsafe {
-                writeln!(
-                    writer_out,
-                    "{} - {}",
-                    group_pointer_checked, lines[group_pointer_checked]
-                )
-                .unchecked_unwrap()
-            };
-            unsafe {
-                writeln!(
-                    writer_out,
-                    "{} - {}",
-                    group_pointer_checker, lines[group_pointer_checker]
-                )
-                .unchecked_unwrap()
-            };
-            unsafe { writeln!(writer_out,).unchecked_unwrap() };
-
-            if unsafe { lines[group_pointer_checked].parse::<Number>().unchecked_unwrap().mutual_contains(&lines[group_pointer_checker].parse::<Number>().unchecked_unwrap()) } {
+            if unsafe {
+                lines[group_pointer_checked]
+                    .parse::<Number>()
+                    .unchecked_unwrap()
+                    .mutual_contains(
+                        &lines[group_pointer_checker]
+                            .parse::<Number>()
+                            .unchecked_unwrap(),
+                    )
+            } {
                 unsafe { writeln!(writer_out, "NO").unchecked_unwrap() };
                 break;
             }
@@ -252,7 +242,7 @@ fn phonelist(lines: &Vec<String>) {
                     unsafe { writeln!(writer_out, "YES").unchecked_unwrap() };
                     break;
                 } else {
-                    group_pointer_checked = group_pointer_checked + 1;
+                    group_pointer_checked += 1;
                     group_pointer_checker = group_pointer_checked + 1;
                 }
             } else {
@@ -265,7 +255,7 @@ fn phonelist(lines: &Vec<String>) {
         }
 
         current_group += 1;
-        lines_pointer += group_target;
+        lines_pointer = group_target + 1;
     }
 }
 
@@ -289,23 +279,23 @@ mod tests {
     #[test]
     fn from_str_test() {
         assert_eq!(
-            "Number { length: 2, ab: 6, cd: 0, ef: 0, gh: 0, ij: 0, _padding: 0 }",
+            "Number { length: 2, data: [6, 0, 0, 0, 0], _padding: 0 }",
             format!("{:?}", "06".parse::<Number>().unwrap())
         );
 
         assert_eq!(
-            "Number { length: 3, ab: 6, cd: 96, ef: 0, gh: 0, ij: 0, _padding: 0 }",
+            "Number { length: 3, data: [6, 96, 0, 0, 0], _padding: 0 }",
             format!("{:?}", "066".parse::<Number>().unwrap())
         );
 
         assert_eq!(
-            "Number { length: 10, ab: 150, cd: 69, ef: 50, gh: 152, ij: 103, _padding: 0 }",
+            "Number { length: 10, data: [150, 69, 50, 152, 103], _padding: 0 }",
             format!("{:?}", "9645329867".parse::<Number>().unwrap())
         );
     }
 
     #[test]
-    fn contains_test() {
+    fn mutual_contains_test() {
         assert_eq!(
             "0".parse::<Number>()
                 .unwrap()
@@ -317,7 +307,7 @@ mod tests {
             "0".parse::<Number>()
                 .unwrap()
                 .mutual_contains(&"06".parse().unwrap()),
-            false
+            true
         );
 
         assert_eq!(
@@ -353,7 +343,17 @@ mod tests {
 
     #[test]
     fn phonelist_test() {
-        let lines: Vec<String> = "2
+        let lines: Vec<String> = "4
+3
+911
+97625999
+91125426
+5
+113
+12340
+123440
+12345
+98346
 3
 911
 97625999
