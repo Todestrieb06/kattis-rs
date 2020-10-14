@@ -153,7 +153,7 @@ impl FromStr for Number {
 }
 
 impl Number {
-    fn new() -> Number {
+    pub fn new() -> Number {
         Number {
             length: 0,
             data: [0, 0, 0, 0, 0],
@@ -161,7 +161,7 @@ impl Number {
         }
     }
 
-    fn with_length(length: u8) -> Number {
+    pub fn with_length(length: u8) -> Number {
         Number {
             length,
             data: [0, 0, 0, 0, 0],
@@ -169,15 +169,28 @@ impl Number {
         }
     }
 
-    fn contains(self, other: &Self) -> bool {
+    pub fn mutual_contains(&self, other: &Self) -> bool {
+        if self.length < other.length {
+            return other.containing(&self);
+        }
+
+        self.containing(other)
+    }
+
+    pub fn contains(self, other: &Self) -> bool {
         if self.length < other.length {
             return false;
         }
 
-        let mut length = other.length;
+        self.containing(other)
+    }
+
+    fn containing(&self, other: &Self) -> bool {
+        let mut length = self.length;
         let mut mask = 0b1111_1111;
 
-        if other.length % 2 == 1 {
+        // TODO: Doit inclure le fait que la longueur pair est égal entre les deux nombres
+        if self.length % 2 == 1 {
             length -= 1;
             mask = 0b1111_0000;
         }
@@ -188,10 +201,10 @@ impl Number {
             length = length - 1;
         }
 
-        let mut self_data_copy = self.data;
+        let mut copy_data = self.data;
 
-        self_data_copy[length as usize] &= mask;
-        self_data_copy[..=length as usize] == other.data[..=length as usize]
+        copy_data[length as usize] &= mask;
+        copy_data[..=length as usize] == other.data[..=length as usize]
     }
 }
 
@@ -206,33 +219,44 @@ fn phonelist(lines: &Vec<String>) {
     loop {
         let group_target =
             unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer }; // 6 - Ok
+
         let mut group_pointer_checked = lines_pointer + 1; // 2 - Ok
         let mut group_pointer_checker = lines_pointer + 2; // 3 - Ok
 
         loop {
-            unsafe { writeln!(writer_out, "{}", lines[group_pointer_checked]).unchecked_unwrap() };
-            unsafe { writeln!(writer_out, "{}", lines[group_pointer_checker]).unchecked_unwrap() };
-            unsafe { writeln!(writer_out).unchecked_unwrap() };
+            unsafe {
+                writeln!(
+                    writer_out,
+                    "{} - {}",
+                    group_pointer_checked, lines[group_pointer_checked]
+                )
+                .unchecked_unwrap()
+            };
+            unsafe {
+                writeln!(
+                    writer_out,
+                    "{} - {}",
+                    group_pointer_checker, lines[group_pointer_checker]
+                )
+                .unchecked_unwrap()
+            };
+            unsafe { writeln!(writer_out,).unchecked_unwrap() };
 
-            if lines[group_pointer_checked].contains(&lines[group_pointer_checker]) {
+            if unsafe { lines[group_pointer_checked].parse::<Number>().unchecked_unwrap().mutual_contains(&lines[group_pointer_checker].parse::<Number>().unchecked_unwrap()) } {
                 unsafe { writeln!(writer_out, "NO").unchecked_unwrap() };
                 break;
             }
 
             if group_pointer_checker == group_target {
-                if group_pointer_checked == group_target {
+                if group_pointer_checked == group_target - 1 {
                     unsafe { writeln!(writer_out, "YES").unchecked_unwrap() };
                     break;
                 } else {
-                    group_pointer_checker = lines_pointer + 1;
                     group_pointer_checked = group_pointer_checked + 1;
+                    group_pointer_checker = group_pointer_checked + 1;
                 }
             } else {
-                group_pointer_checker += if group_pointer_checked == group_pointer_checker {
-                    2
-                } else {
-                    1
-                }
+                group_pointer_checker += 1;
             }
         }
 
@@ -285,28 +309,28 @@ mod tests {
         assert_eq!(
             "0".parse::<Number>()
                 .unwrap()
-                .contains(&"6".parse().unwrap()),
+                .mutual_contains(&"6".parse().unwrap()),
             false
         );
 
         assert_eq!(
             "0".parse::<Number>()
                 .unwrap()
-                .contains(&"06".parse().unwrap()),
+                .mutual_contains(&"06".parse().unwrap()),
             false
         );
 
         assert_eq!(
             "5".parse::<Number>()
                 .unwrap()
-                .contains(&"5".parse().unwrap()),
+                .mutual_contains(&"5".parse().unwrap()),
             true
         );
 
         assert_eq!(
             "06".parse::<Number>()
                 .unwrap()
-                .contains(&"06".parse().unwrap()),
+                .mutual_contains(&"06".parse().unwrap()),
             true
         );
 
@@ -314,7 +338,7 @@ mod tests {
             "06100"
                 .parse::<Number>()
                 .unwrap()
-                .contains(&"061".parse().unwrap()),
+                .mutual_contains(&"061".parse().unwrap()),
             true
         );
 
@@ -322,29 +346,18 @@ mod tests {
             "0123456789"
                 .parse::<Number>()
                 .unwrap()
-                .contains(&"0123456789".parse().unwrap()),
+                .mutual_contains(&"0123456789".parse().unwrap()),
             true
         );
     }
 
     #[test]
     fn phonelist_test() {
-        /*let lines: Vec<String> = "2
-        3
-        911
-        97625999
-        91125426
-        5
-        113
-        12340
-        123440
-        12345
-        98346"
-                    .lines()
-                    .map(|line| line.to_string())
-                    .collect();*/
-
-        let lines: Vec<String> = "1
+        let lines: Vec<String> = "2
+3
+911
+97625999
+91125426
 5
 113
 12340
