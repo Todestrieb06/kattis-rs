@@ -1,5 +1,5 @@
 use std::hint::unreachable_unchecked;
-use std::io::{self, BufRead, BufWriter, Write, Lines, StdinLock};
+use std::io::{self, BufRead, BufWriter, Lines, StdinLock, Write};
 use std::str::FromStr;
 
 pub trait UncheckedUnwrap<T> {
@@ -212,9 +212,7 @@ fn main() {
     let mut lines: Lines<StdinLock> = {
         let stdin = io::stdin();
 
-        stdin
-            .lock()
-            .lines()
+        stdin.lock().lines()
     };
 
     let stdout = io::stdout();
@@ -226,28 +224,23 @@ fn main() {
         let numbers: Vec<Number> = {
             let group_length: usize = lines.next().parse();
 
-            lines.take(group_length).map(|line| unsafe { line.unchecked_unwrap().parse() }).collect()
+            lines
+                .take(group_length)
+                .map(|line| unsafe { line.unchecked_unwrap().parse() })
+                .collect()
         };
 
-        let group_target =
-            unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer };
+        /*let group_target =
+        unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer };*/
 
         let mut group_pointer_checked: u16 = 0;
         let mut group_pointer_checker: u16 = 1;
 
         loop {
-            let number_checked = lines. .map(|line| unsafe { line.unchecked_unwrap() }).collect()
+            let is_contained = numbers[group_pointer_checked as usize]
+                .mutual_contains(&numbers[group_pointer_checker as usize]);
 
-            if unsafe {
-                lines[group_pointer_checked]
-                    .parse::<Number>()
-                    .unchecked_unwrap()
-                    .mutual_contains(
-                        &lines[group_pointer_checker]
-                            .parse::<Number>()
-                            .unchecked_unwrap(),
-                    )
-            } {
+            if is_contained {
                 unsafe { writeln!(writer_out, "NO").unchecked_unwrap() };
                 break;
             }
