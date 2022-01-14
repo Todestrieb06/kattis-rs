@@ -1,5 +1,5 @@
 use std::hint::unreachable_unchecked;
-use std::io::{self, BufRead, BufWriter, Write};
+use std::io::{self, BufRead, BufWriter, Lines, StdinLock, Write};
 use std::str::FromStr;
 
 pub trait UncheckedUnwrap<T> {
@@ -207,33 +207,40 @@ impl Number {
     }
 }
 
-#[inline]
-fn phonelist(lines: &Vec<String>) {
+// https://open.kattis.com/problems/phonelist
+fn main() {
+    let mut lines: Lines<StdinLock> = {
+        let stdin = io::stdin();
+
+        stdin.lock().lines()
+    };
+
     let stdout = io::stdout();
     let mut writer_out = BufWriter::new(stdout);
 
-    let groups_count: u8 = unsafe { lines[0].parse().unchecked_unwrap() };
-    let mut current_group: u8 = 1;
-    let mut lines_pointer: usize = 1;
+    let groups_count: u8 = unsafe { lines.next().parse().unchecked_unwrap() };
 
     loop {
-        let group_target =
-            unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer };
+        let numbers: Vec<Number> = {
+            let group_length: usize = lines.next().parse();
 
-        let mut group_pointer_checked = lines_pointer + 1;
-        let mut group_pointer_checker = lines_pointer + 2;
+            lines
+                .take(group_length)
+                .map(|line| unsafe { line.unchecked_unwrap().parse() })
+                .collect()
+        };
+
+        /*let group_target =
+        unsafe { lines[lines_pointer].parse::<usize>().unchecked_unwrap() + lines_pointer };*/
+
+        let mut group_pointer_checked: u16 = 0;
+        let mut group_pointer_checker: u16 = 1;
 
         loop {
-            if unsafe {
-                lines[group_pointer_checked]
-                    .parse::<Number>()
-                    .unchecked_unwrap()
-                    .mutual_contains(
-                        &lines[group_pointer_checker]
-                            .parse::<Number>()
-                            .unchecked_unwrap(),
-                    )
-            } {
+            let is_contained = numbers[group_pointer_checked as usize]
+                .mutual_contains(&numbers[group_pointer_checker as usize]);
+
+            if is_contained {
                 unsafe { writeln!(writer_out, "NO").unchecked_unwrap() };
                 break;
             }
@@ -258,19 +265,6 @@ fn phonelist(lines: &Vec<String>) {
         current_group += 1;
         lines_pointer = group_target + 1;
     }
-}
-
-// https://open.kattis.com/problems/phonelist
-fn main() {
-    let lines: Vec<String> = {
-        let stdin = io::stdin();
-
-        stdin
-            .lock()
-            .lines()
-            .map(|line| unsafe { line.unchecked_unwrap() })
-            .collect()
-    };
 
     phonelist(&lines);
 }
@@ -278,6 +272,8 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use crate::problems::phonelist::{phonelist, Number};
+    use std::io::Lines;
+    use std::io::StdinLock;
 
     #[test]
     fn from_str_test() {
@@ -342,35 +338,5 @@ mod tests {
                 .mutual_contains(&"0123456789".parse().unwrap()),
             true
         );
-    }
-
-    #[test]
-    fn phonelist_test() {
-        let lines: Vec<String> = "4
-3
-911
-97625999
-91125426
-5
-113
-12340
-123440
-12345
-98346
-3
-911
-97625999
-91125426
-5
-113
-12340
-123440
-12345
-98346"
-            .lines()
-            .map(|line| line.to_string())
-            .collect();
-
-        phonelist(&lines);
     }
 }
